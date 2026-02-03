@@ -33,6 +33,7 @@ const App: React.FC = () => {
     brandColor: '#4f46e5'
   });
   const [loading, setLoading] = useState(true);
+  const [criticalError, setCriticalError] = useState<string | null>(null);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,12 +66,16 @@ const App: React.FC = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const { data: cls } = await supabase.from('classes').select('*').order('name');
+        const { data: cls, error: clsErr } = await supabase.from('classes').select('*').order('name');
+        if (clsErr) throw clsErr;
+
         const { data: sub } = await supabase.from('subjects').select('*');
         const { data: tch } = await supabase.from('teachers').select('*');
         const { data: les } = await supabase.from('lessons').select('*');
         const { data: tchSub } = await supabase.from('teacher_subjects').select('*');
-        const { data: sett } = await supabase.from('app_settings').select('*').single();
+        
+        // .single() xatolik berishi mumkin agar jadval bo'sh bo'lsa
+        const { data: sett } = await supabase.from('app_settings').select('*').maybeSingle();
 
         if (cls) setClasses(cls);
         if (sub) setSubjects(sub.map(s => ({ ...s, id: s.id, classId: s.class_id, name: s.name, weeklyHours: s.weekly_hours })));
@@ -79,7 +84,7 @@ const App: React.FC = () => {
           classId: l.class_id, 
           teacherId: l.teacher_id, 
           subjectName: l.subject_name, 
-          period: parseInt(l.period) 
+          period: parseInt(l.period as any) 
         })));
         
         if (tch) {
@@ -88,7 +93,7 @@ const App: React.FC = () => {
             name: t.name,
             mainSubject: t.main_subject,
             phone: t.phone,
-            availableSlots: t.available_slots,
+            availableSlots: t.available_slots || [],
             subjectIds: tchSub?.filter(ts => ts.teacher_id === t.id).map(ts => ts.subject_id) || []
           }));
           setTeachers(mappedTeachers);
@@ -104,8 +109,9 @@ const App: React.FC = () => {
                 brandColor: sett.brand_color
             });
         }
-      } catch (error) {
-        console.error('Xatolik:', error);
+      } catch (error: any) {
+        console.error('Baza bilan ulanishda xatolik:', error);
+        setCriticalError(error.message || 'Supabase bilan ulanishda noma\'lum xatolik yuz berdi. Iltimos SQL kodni Supabase panelida ishga tushirganingizga ishonch hosil qiling.');
       } finally {
         setLoading(false);
       }
@@ -113,6 +119,19 @@ const App: React.FC = () => {
 
     fetchData();
   }, []);
+
+  if (criticalError) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-20 h-20 bg-red-500/20 text-red-500 rounded-3xl flex items-center justify-center mb-6">
+          <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+        </div>
+        <h2 className="text-2xl font-black text-white mb-2">Xatolik Yuz Berdi</h2>
+        <p className="text-slate-400 max-w-md mb-8">{criticalError}</p>
+        <button onClick={() => window.location.reload()} className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-indigo-700 transition-all">Qayta yuklash</button>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -134,7 +153,7 @@ const App: React.FC = () => {
         settings={settings}
       />
       
-      <main className="flex-1 p-8 overflow-y-auto">
+      <main className="flex-1 p-8 overflow-y-auto custom-scrollbar">
         {activeView === 'dashboard' && (
           <Dashboard 
             teachers={teachers} 
