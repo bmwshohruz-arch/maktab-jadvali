@@ -9,9 +9,11 @@ interface SidebarProps {
   isLoggedIn: boolean;
   onLoginClick: () => void;
   settings: AppSettings;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, onLogout, isLoggedIn, onLoginClick, settings }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, onLogout, isLoggedIn, onLoginClick, settings, isOpen, onClose }) => {
   const navItems: { id: ViewType; label: string; icon: string; adminOnly?: boolean }[] = [
     { id: 'timetable', label: 'Dars Jadvali', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002-2z' },
     { id: 'classes', label: 'Sinflar', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16' },
@@ -21,65 +23,79 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, onLogout, 
   ];
 
   return (
-    <aside className="w-72 bg-slate-900 text-white flex flex-col shadow-2xl z-50">
-      <div className="p-8">
-        <div className="flex items-center gap-3">
-            <div 
-                className="w-10 h-10 text-white rounded-xl flex items-center justify-center font-black text-xl shadow-lg"
-                style={{ backgroundColor: settings.brandColor }}
-            >
-                {settings.schoolName[0]}
-            </div>
-            <h1 className="text-xl font-black tracking-tighter uppercase italic line-clamp-1">{settings.schoolName}</h1>
-        </div>
-        <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em] mt-3 ml-1">Boshqaruv Tizimi</p>
-      </div>
-      
-      <nav className="flex-1 px-4 py-4 space-y-2">
-        {navItems.map((item) => (
-          (!item.adminOnly || isLoggedIn) && (
-            <button
-              key={item.id}
-              onClick={() => setActiveView(item.id)}
-              className={`w-full flex items-center space-x-4 px-6 py-4 rounded-2xl transition-all duration-300 ${
-                activeView === item.id 
-                  ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30 translate-x-2' 
-                  : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-              }`}
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d={item.icon} />
-              </svg>
-              <span className="font-black text-sm uppercase tracking-wider">{item.label}</span>
-            </button>
-          )
-        ))}
-      </nav>
+    <>
+      {/* Mobil Backdrop */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[45] lg:hidden"
+          onClick={onClose}
+        />
+      )}
 
-      <div className="p-8 border-t border-slate-800">
-        {isLoggedIn ? (
-          <div className="flex flex-col gap-4">
-            <div className="bg-slate-800/50 p-4 rounded-2xl flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center font-bold border-2 border-indigo-400">S</div>
-              <div>
-                <p className="text-xs font-black uppercase tracking-tight">Admin</p>
-                <p className="text-[10px] text-indigo-400 font-bold tracking-widest">SHOHRUZ</p>
+      <aside className={`fixed lg:static top-0 left-0 w-72 h-full bg-slate-900 text-white flex flex-col shadow-2xl z-50 transition-transform duration-300 transform ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+        <div className="p-8 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+              <div 
+                  className="w-10 h-10 text-white rounded-xl flex items-center justify-center font-black text-xl shadow-lg"
+                  style={{ backgroundColor: settings.brandColor }}
+              >
+                  {settings.schoolName[0]}
               </div>
+              <h1 className="text-xl font-black tracking-tighter uppercase italic line-clamp-1">{settings.schoolName}</h1>
+          </div>
+          <button onClick={onClose} className="lg:hidden p-2 text-slate-500 hover:text-white">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto custom-scrollbar">
+          {navItems.map((item) => (
+            (!item.adminOnly || isLoggedIn) && (
+              <button
+                key={item.id}
+                onClick={() => setActiveView(item.id)}
+                className={`w-full flex items-center space-x-4 px-6 py-4 rounded-2xl transition-all duration-300 ${
+                  activeView === item.id 
+                    ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30 translate-x-2' 
+                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                }`}
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d={item.icon} />
+                </svg>
+                <span className="font-black text-sm uppercase tracking-wider">{item.label}</span>
+              </button>
+            )
+          ))}
+        </nav>
+
+        <div className="p-8 border-t border-slate-800">
+          {isLoggedIn ? (
+            <div className="flex flex-col gap-4">
+              <div className="bg-slate-800/50 p-4 rounded-2xl flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center font-bold border-2 border-indigo-400">S</div>
+                <div className="overflow-hidden">
+                  <p className="text-xs font-black uppercase tracking-tight">Admin</p>
+                  <p className="text-[10px] text-indigo-400 font-bold tracking-widest truncate">SHOHRUZ</p>
+                </div>
+              </div>
+              <button 
+                onClick={onLogout}
+                className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all"
+              >
+                Chiqish
+              </button>
             </div>
-            <button 
-              onClick={onLogout}
-              className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all"
-            >
-              Chiqish
-            </button>
-          </div>
-        ) : (
-          <div className="bg-slate-800/20 p-4 rounded-2xl border border-dashed border-slate-700">
-             <p className="text-slate-500 text-[9px] font-bold uppercase text-center tracking-widest">Tizimni tahrirlash uchun admin sifatida kiring</p>
-          </div>
-        )}
-      </div>
-    </aside>
+          ) : (
+            <div className="bg-slate-800/20 p-4 rounded-2xl border border-dashed border-slate-700">
+               <p className="text-slate-500 text-[9px] font-bold uppercase text-center tracking-widest leading-relaxed">Tizimni tahrirlash uchun admin sifatida kiring</p>
+            </div>
+          )}
+        </div>
+      </aside>
+    </>
   );
 };
 
