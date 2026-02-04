@@ -7,7 +7,6 @@ import ClassPanel from './components/ClassPanel';
 import SubjectPanel from './components/SubjectPanel';
 import TimetablePanel from './components/TimetablePanel';
 import SettingsPanel from './components/SettingsPanel';
-import Dashboard from './components/Dashboard';
 import { supabase } from './supabase';
 
 const App: React.FC = () => {
@@ -18,7 +17,7 @@ const App: React.FC = () => {
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [loginError, setLoginError] = useState('');
 
-  const [activeView, setActiveView] = useState<ViewType>('dashboard');
+  const [activeView, setActiveView] = useState<ViewType>('timetable');
   const [triggerAdd, setTriggerAdd] = useState(false);
 
   const [classes, setClasses] = useState<SchoolClass[]>([]);
@@ -50,14 +49,7 @@ const App: React.FC = () => {
   const handleLogout = () => {
     setIsLoggedIn(false);
     sessionStorage.removeItem('admin_session');
-    setActiveView('dashboard');
-  };
-
-  const navigateWithAdd = (view: ViewType) => {
-    setActiveView(view);
-    if (isLoggedIn) {
-      setTriggerAdd(true);
-    }
+    setActiveView('timetable');
   };
 
   const resetTrigger = () => setTriggerAdd(false);
@@ -74,7 +66,6 @@ const App: React.FC = () => {
         const { data: les } = await supabase.from('lessons').select('*');
         const { data: tchSub } = await supabase.from('teacher_subjects').select('*');
         
-        // .single() xatolik berishi mumkin agar jadval bo'sh bo'lsa
         const { data: sett } = await supabase.from('app_settings').select('*').maybeSingle();
 
         if (cls) setClasses(cls);
@@ -111,7 +102,7 @@ const App: React.FC = () => {
         }
       } catch (error: any) {
         console.error('Baza bilan ulanishda xatolik:', error);
-        setCriticalError(error.message || 'Supabase bilan ulanishda noma\'lum xatolik yuz berdi. Iltimos SQL kodni Supabase panelida ishga tushirganingizga ishonch hosil qiling.');
+        setCriticalError(error.message || 'Supabase bilan ulanishda xatolik yuz berdi.');
       } finally {
         setLoading(false);
       }
@@ -154,21 +145,11 @@ const App: React.FC = () => {
       />
       
       <main className="flex-1 p-8 overflow-y-auto custom-scrollbar">
-        {activeView === 'dashboard' && (
-          <Dashboard 
-            teachers={teachers} 
-            classes={classes} 
-            subjects={subjects}
-            lessons={lessons} 
-            setActiveView={navigateWithAdd}
-            settings={settings}
-          />
-        )}
         {activeView === 'classes' && (
           <ClassPanel 
             classes={classes} 
             setClasses={setClasses} 
-            isAdmin={isLoggedIn} 
+            isAdmin={true} 
             autoOpenAdd={triggerAdd}
             onModalClose={resetTrigger}
           />
@@ -179,7 +160,7 @@ const App: React.FC = () => {
             subjects={subjects} 
             setSubjects={setSubjects} 
             teachers={teachers}
-            isAdmin={isLoggedIn} 
+            isAdmin={true} 
             autoOpenAdd={triggerAdd}
             onModalClose={resetTrigger}
           />
@@ -193,7 +174,7 @@ const App: React.FC = () => {
             lessons={lessons}
             setLessons={setLessons}
             classes={classes}
-            isAdmin={isLoggedIn}
+            isAdmin={true}
             autoOpenAdd={triggerAdd}
             onModalClose={resetTrigger}
           />
@@ -205,7 +186,7 @@ const App: React.FC = () => {
             lessons={lessons} 
             setLessons={setLessons} 
             subjects={subjects}
-            isAdmin={isLoggedIn}
+            isAdmin={true}
           />
         )}
         {activeView === 'settings' && isLoggedIn && (

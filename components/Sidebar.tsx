@@ -13,11 +13,10 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, onLogout, isLoggedIn, onLoginClick, settings }) => {
   const navItems: { id: ViewType; label: string; icon: string; adminOnly?: boolean }[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
     { id: 'timetable', label: 'Dars Jadvali', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002-2z' },
-    { id: 'classes', label: 'Sinflar', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16', adminOnly: true },
-    { id: 'subjects', label: 'Fanlar', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13', adminOnly: true },
-    { id: 'teachers', label: 'O\'qituvchilar', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857', adminOnly: true },
+    { id: 'classes', label: 'Sinflar', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16' },
+    { id: 'subjects', label: 'Fanlar', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13' },
+    { id: 'teachers', label: 'O\'qituvchilar', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857' },
     { id: 'settings', label: 'Sozlamalar', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z', adminOnly: true },
   ];
 
@@ -76,7 +75,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, onLogout, 
           </div>
         ) : (
           <div className="bg-slate-800/20 p-4 rounded-2xl border border-dashed border-slate-700">
-             <p className="text-slate-500 text-[9px] font-bold uppercase text-center tracking-widest">Admin paneliga kirish uchun pastki tugmani bosing</p>
+             <p className="text-slate-500 text-[9px] font-bold uppercase text-center tracking-widest">Tizimni tahrirlash uchun admin sifatida kiring</p>
           </div>
         )}
       </div>

@@ -68,15 +68,15 @@ const ClassPanel: React.FC<ClassPanelProps> = ({ classes, setClasses, isAdmin, a
 
   return (
     <div className="animate-in fade-in duration-500">
-      <div className="flex justify-between items-end mb-12">
+      <div className="flex justify-between items-end mb-12 bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100">
         <div>
           <h2 className="text-5xl font-black text-slate-900 tracking-tighter">Sinflar</h2>
-          <p className="text-slate-400 font-bold uppercase tracking-[0.3em] text-xs mt-2 ml-1">Mavjud sinflar va xonalar</p>
+          <p className="text-slate-400 font-bold uppercase tracking-[0.3em] text-xs mt-2 ml-1">Mavjud sinflar va xonalar ro'yxati</p>
         </div>
         {isAdmin && (
           <button 
             onClick={() => { setIsAdding(true); setEditingClass(null); setFormData({ name: '', room: '' }); }}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs transition-all shadow-2xl shadow-indigo-100 flex items-center gap-3 hover:scale-105 active:scale-95"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs transition-all shadow-2xl shadow-indigo-100 flex items-center gap-3 hover:scale-105 active:scale-95"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" /></svg>
             Sinf Qo'shish
@@ -87,7 +87,7 @@ const ClassPanel: React.FC<ClassPanelProps> = ({ classes, setClasses, isAdmin, a
       {(isAdding || editingClass) && isAdmin && (
         <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-xl flex items-center justify-center z-[100] p-4">
           <div className="bg-white p-10 rounded-[3rem] shadow-2xl w-full max-w-md animate-in zoom-in duration-300">
-            <h3 className="text-2xl font-black text-slate-800 mb-8 tracking-tight">{editingClass ? 'Sinfni Tahrirlash' : 'Yangi Sinf'}</h3>
+            <h3 className="text-2xl font-black text-slate-800 mb-8 tracking-tight">{editingClass ? 'Sinfni Tahrirlash' : 'Yangi Sinf Qo\'shish'}</h3>
             <form onSubmit={handleAddOrUpdate} className="space-y-6">
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sinf Nomi</label>
@@ -108,8 +108,11 @@ const ClassPanel: React.FC<ClassPanelProps> = ({ classes, setClasses, isAdmin, a
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {classes.map(c => (
-          <div key={c.id} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 group relative">
-            <h3 className="text-3xl font-black text-slate-800 tracking-tighter mb-1">{c.name}</h3>
+          <div key={c.id} className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 group relative">
+            <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-indigo-50 transition-colors">
+              <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16" /></svg>
+            </div>
+            <h3 className="text-4xl font-black text-slate-800 tracking-tighter mb-1">{c.name}</h3>
             <div className="flex items-center text-slate-400 font-bold uppercase text-[10px] tracking-widest">
               {c.room}-xona
             </div>
@@ -125,6 +128,11 @@ const ClassPanel: React.FC<ClassPanelProps> = ({ classes, setClasses, isAdmin, a
             )}
           </div>
         ))}
+        {classes.length === 0 && (
+          <div className="col-span-full py-20 text-center bg-white rounded-[3rem] border border-dashed border-slate-200">
+             <p className="text-slate-400 font-black uppercase tracking-widest text-xs italic">Hali sinflar qo'shilmagan</p>
+          </div>
+        )}
       </div>
     </div>
   );

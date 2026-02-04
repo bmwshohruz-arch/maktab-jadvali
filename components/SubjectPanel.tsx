@@ -7,7 +7,7 @@ interface SubjectPanelProps {
   classes: SchoolClass[];
   subjects: Subject[];
   setSubjects: React.Dispatch<React.SetStateAction<Subject[]>>;
-  teachers: Teacher[]; // Added teachers prop
+  teachers: Teacher[];
   isAdmin: boolean;
   autoOpenAdd?: boolean;
   onModalClose?: () => void;
@@ -16,30 +16,41 @@ interface SubjectPanelProps {
 const SubjectPanel: React.FC<SubjectPanelProps> = ({ classes, subjects, setSubjects, teachers, isAdmin, autoOpenAdd, onModalClose }) => {
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
-  const [formData, setFormData] = useState({ name: '', weeklyHours: 1 });
+  const [formData, setFormData] = useState({ name: '', weeklyHours: 1, classId: '' });
 
   useEffect(() => {
     if (autoOpenAdd && isAdmin) {
-      if (!selectedClassId && classes.length > 0) {
-        setSelectedClassId(classes[0].id);
-      }
       setIsAdding(true);
+      if (selectedClassId) {
+        setFormData(prev => ({ ...prev, classId: selectedClassId }));
+      } else if (classes.length > 0) {
+        setFormData(prev => ({ ...prev, classId: classes[0].id }));
+      }
     }
-  }, [autoOpenAdd, isAdmin, classes]);
+  }, [autoOpenAdd, isAdmin, classes, selectedClassId]);
 
   const closeModals = () => {
     setIsAdding(false);
     if (onModalClose) onModalClose();
   };
 
+  const openAddModal = () => {
+    setFormData({ 
+      name: '', 
+      weeklyHours: 1, 
+      classId: selectedClassId || (classes.length > 0 ? classes[0].id : '') 
+    });
+    setIsAdding(true);
+  };
+
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedClassId || !isAdmin) return;
+    if (!formData.classId || !isAdmin) return;
 
     const { data, error } = await supabase
       .from('subjects')
       .insert([{
-        class_id: selectedClassId,
+        class_id: formData.classId,
         name: formData.name,
         weekly_hours: formData.weeklyHours
       }])
@@ -53,7 +64,7 @@ const SubjectPanel: React.FC<SubjectPanelProps> = ({ classes, subjects, setSubje
         weeklyHours: data[0].weekly_hours
       };
       setSubjects([...subjects, newSub]);
-      setFormData({ name: '', weeklyHours: 1 });
+      // Agar yangi qo'shilgan fan hozirgi tanlangan sinfga tegishli bo'lsa, ko'rinishni yangilash shart emas, chunki subjects state o'zgardi
       closeModals();
     }
   };
@@ -72,9 +83,20 @@ const SubjectPanel: React.FC<SubjectPanelProps> = ({ classes, subjects, setSubje
 
   return (
     <div className="animate-in fade-in duration-500">
-      <div className="mb-12">
-        <h2 className="text-5xl font-black text-slate-900 tracking-tighter">Fanlar</h2>
-        <p className="text-slate-400 font-bold uppercase tracking-[0.3em] text-xs mt-2 ml-1">O'quv rejasini shakllantiring</p>
+      <div className="flex justify-between items-end mb-12 bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100">
+        <div>
+          <h2 className="text-5xl font-black text-slate-900 tracking-tighter">Fanlar</h2>
+          <p className="text-slate-400 font-bold uppercase tracking-[0.3em] text-xs mt-2 ml-1">O'quv rejasini shakllantiring</p>
+        </div>
+        {isAdmin && (
+          <button 
+            onClick={openAddModal}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs transition-all shadow-2xl shadow-indigo-100 flex items-center gap-3 hover:scale-105 active:scale-95"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" /></svg>
+            Fan Qo'shish
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -111,19 +133,9 @@ const SubjectPanel: React.FC<SubjectPanelProps> = ({ classes, subjects, setSubje
         <div className="lg:col-span-3">
           {selectedClassId ? (
             <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm min-h-[500px]">
-              <div className="flex justify-between items-center mb-10">
-                <div>
-                    <h3 className="text-3xl font-black text-slate-800 tracking-tighter">{selectedClass?.name} sinfi darslari</h3>
-                    <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Haftalik yuklama: {classSubjects.reduce((a,c) => a+c.weeklyHours, 0)} soat</p>
-                </div>
-                {isAdmin && (
-                  <button 
-                    onClick={() => setIsAdding(true)}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-indigo-100"
-                  >
-                    Fan Qo'shish
-                  </button>
-                )}
+              <div className="mb-10">
+                  <h3 className="text-3xl font-black text-slate-800 tracking-tighter">{selectedClass?.name} sinfi darslari</h3>
+                  <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Haftalik yuklama: {classSubjects.reduce((a,c) => a+c.weeklyHours, 0)} soat</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -161,8 +173,13 @@ const SubjectPanel: React.FC<SubjectPanelProps> = ({ classes, subjects, setSubje
               </div>
             </div>
           ) : (
-            <div className="bg-slate-50/50 rounded-[3rem] border-4 border-dashed border-slate-100 flex items-center justify-center min-h-[500px]">
-                <p className="text-slate-300 font-black uppercase tracking-widest text-xs">Chapdan sinf tanlang</p>
+            <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm flex items-center justify-center min-h-[500px]">
+                <div className="text-center">
+                    <div className="w-20 h-20 bg-indigo-50 text-indigo-400 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                        <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13" /></svg>
+                    </div>
+                    <p className="text-slate-400 font-black uppercase tracking-widest text-xs">Chapdan sinfni tanlang yoki yuqoridagi tugma orqali fan qo'shing</p>
+                </div>
             </div>
           )}
         </div>
@@ -171,8 +188,22 @@ const SubjectPanel: React.FC<SubjectPanelProps> = ({ classes, subjects, setSubje
       {isAdding && isAdmin && (
         <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-xl flex items-center justify-center z-[100] p-4">
           <div className="bg-white p-10 rounded-[3rem] shadow-2xl w-full max-w-md animate-in zoom-in duration-300">
-            <h3 className="text-2xl font-black text-slate-800 mb-8 tracking-tight">Fan Biriktirish</h3>
+            <h3 className="text-2xl font-black text-slate-800 mb-8 tracking-tight">Fan Qo'shish</h3>
             <form onSubmit={handleAdd} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sinfni Tanlang</label>
+                <select 
+                  required
+                  className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 rounded-2xl outline-none font-black transition-all appearance-none"
+                  value={formData.classId}
+                  onChange={e => setFormData({...formData, classId: e.target.value})}
+                >
+                  <option value="" disabled>Sinfni tanlang</option>
+                  {classes.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Fan Nomi</label>
                 <input 

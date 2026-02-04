@@ -49,4 +49,4 @@ export interface AppSettings {
   brandColor: string;
 }
 
-export type ViewType = 'dashboard' | 'classes' | 'subjects' | 'teachers' | 'timetable' | 'settings';
+export type ViewType = 'classes' | 'subjects' | 'teachers' | 'timetable' | 'settings';
